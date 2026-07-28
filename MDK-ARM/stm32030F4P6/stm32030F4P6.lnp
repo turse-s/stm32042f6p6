@@ -8,6 +8,7 @@
 "stm32030f4p6\sensor.o"
 "stm32030f4p6\stm32f0xx_it.o"
 "stm32030f4p6\stm32f0xx_hal_msp.o"
+"stm32030f4p6\usart.o"
 "stm32030f4p6\stm32f0xx_hal_adc.o"
 "stm32030f4p6\stm32f0xx_hal_adc_ex.o"
 "stm32030f4p6\stm32f0xx_hal_rcc.o"
@@ -25,6 +26,8 @@
 "stm32030f4p6\stm32f0xx_hal_exti.o"
 "stm32030f4p6\stm32f0xx_hal_tim.o"
 "stm32030f4p6\stm32f0xx_hal_tim_ex.o"
+"stm32030f4p6\stm32f0xx_hal_uart.o"
+"stm32030f4p6\stm32f0xx_hal_uart_ex.o"
 "stm32030f4p6\system_stm32f0xx.o"
 --strict --scatter "stm32030F4P6\stm32030F4P6.sct"
 --summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols

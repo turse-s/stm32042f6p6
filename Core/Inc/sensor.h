@@ -10,9 +10,9 @@
 #define AHT20_CMD_RESET    0xBA
 
 extern uint8_t aht20_raw_data[6];
-extern float temperature;
-extern float humidity;
-
 
 uint8_t AHT20_Read(float *temp, float *humi);
+float CalcDewPoint(float ambientTemp, float ambientHumi);
+uint8_t AHT20_Init(void);
+float ln_approx(float x);
 #endif

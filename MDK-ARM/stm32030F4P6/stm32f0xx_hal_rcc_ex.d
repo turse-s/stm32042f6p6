@@ -27,7 +27,7 @@ stm32030f4p6\stm32f0xx_hal_rcc_ex.o: ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0
 stm32030f4p6\stm32f0xx_hal_rcc_ex.o: ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_flash_ex.h
 stm32030f4p6\stm32f0xx_hal_rcc_ex.o: ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_i2c.h
 stm32030f4p6\stm32f0xx_hal_rcc_ex.o: ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_i2c_ex.h
-stm32030f4p6\stm32f0xx_hal_rcc_ex.o: ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_pwr.h
-stm32030f4p6\stm32f0xx_hal_rcc_ex.o: ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_pwr_ex.h
 stm32030f4p6\stm32f0xx_hal_rcc_ex.o: ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_tim.h
 stm32030f4p6\stm32f0xx_hal_rcc_ex.o: ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_tim_ex.h
+stm32030f4p6\stm32f0xx_hal_rcc_ex.o: ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_uart.h
+stm32030f4p6\stm32f0xx_hal_rcc_ex.o: ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_uart_ex.h

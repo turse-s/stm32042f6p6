@@ -30,6 +30,23 @@ extern "C" {
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f0xx_hal.h"
 
+/* ---------- PI温控参数 ---------- */
+#define TARGET_TEMP         5.0f    /* 目标温度 (°C), 固定值          */
+#define EMERGENCY_MARGIN    1.5f    /* 距露点<此值紧急关停 (°C)       */
+#define DEW_HYSTERESIS      1.0f    /* 防结露保护回差 (°C)            */
+#define KP                  25.0f   /* 比例系数 (每°C偏差输出25%PWM)  */
+#define KI                  1.0f    /* 积分系数 (每°C·秒累加1%PWM)    */
+#define LOOP_PERIOD_MS      50    /* 控制周期 (ms)                  */
+#define PWM_MAX             100.0f
+#define PWM_MIN             0.0f
+
+/* NTC 断线/短路检测: 100kΩ NTC + 100kΩ 上拉到 3.3V */
+#define ADC_NTC_MIN         300     /* ADC<300 → NTC短路或温度>85°C    */
+#define ADC_NTC_MAX         3900    /* ADC>3900 → NTC断线或温度<-30°C  */
+
+static float pi_integral = 0.0f;    /* 积分累加项, 带抗饱和保护       */
+static uint8_t dew_protect_active = 0; /* 防结露保护状态 (带回差)     */
+
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 

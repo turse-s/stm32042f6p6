@@ -79,18 +79,24 @@ void timPwmPerCtrl(TIM_HandleTypeDef *htim, eTimPwmChan channel, unsigned char p
 {
     unsigned long compareReg;
 
-    compareReg = (htim->Init.Period + 1) * (per / 100.0f);
+     /*
+     * Fix: 当 per=100 时, (Period+1)*1.0 = 65536 溢出 16 位 CCR 寄存器,
+     * 截断为 0 → 0% 占空比。此处钳位到 Period=65535, 得到 99.998% 占空比,
+     * 对 MOSFET 驱动 TEC 来说等价于 100%。
+     */
+    if (per >= 100) {
+        compareReg = htim->Init.Period;
+    } else if (per == 0) {
+        compareReg = 0;
+    } else {
+        compareReg = (unsigned long)((htim->Init.Period + 1) * (per / 100.0f));
+    }
+
     if ((channel & TIM_PWM_CHANNEL_4) == TIM_PWM_CHANNEL_4) {
         __HAL_TIM_SET_COMPARE(htim, TIM_CHANNEL_4, compareReg);
     }
-    if ((channel & TIM_PWM_CHANNEL_3) == TIM_PWM_CHANNEL_3) {
-        __HAL_TIM_SET_COMPARE(htim, TIM_CHANNEL_3, compareReg);
-    }
     if ((channel & TIM_PWM_CHANNEL_2) == TIM_PWM_CHANNEL_2) {
         __HAL_TIM_SET_COMPARE(htim, TIM_CHANNEL_2, compareReg);
-    }
-    if ((channel & TIM_PWM_CHANNEL_1) == TIM_PWM_CHANNEL_1) {
-        __HAL_TIM_SET_COMPARE(htim, TIM_CHANNEL_1, compareReg);
     }
 }
 
