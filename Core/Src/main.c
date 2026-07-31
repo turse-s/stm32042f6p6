@@ -20,11 +20,11 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "adc.h"
-#include "dma.h"
 #include "i2c.h"
 #include "tim.h"
 #include "gpio.h"
 #include "sensor.h"
+#include "usart.h"
 #include <math.h>
 
 ADC_HandleTypeDef hadc1;
@@ -68,7 +68,7 @@ float NTC_GetTemp(uint16_t adc_val)
     float voltage = adc_val * 3.3f / 4095.0f;
     float Rt = 100000.0f * (3.3f - voltage) / voltage;
     float temp;
-    temp = 1.0f / (1.0f / 298.15f + ln_approx(Rt / 100000.0f) / 3950.0f);
+    temp = 1.0f / (1.0f / 298.15f + log(Rt / 100000.0f) / 3950.0f);
     temp = temp - 273.15f;
     return temp;
 }
@@ -105,19 +105,20 @@ int main(void)
   MX_GPIO_Init();
 //  MX_ADC_Init();
   MX_I2C1_Init();
-//  MX_DMA_Init();
   MX_TIM3_Init();
+  
+//  MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
 
     adc1.sta = ADC_STA_IDLE;
-    adc1.channelCnt = ADC_CHANNEL_NUM;  // 2è·¯
+    adc1.channelCnt = ADC_CHANNEL_NUM;  // 2Â·
     
     if (adcInit(&hadc1, ADC1, &adc1) != 0) {
-        Error_Handler();    // åˆå§‹åŒ–å¤±è´¥
+        Error_Handler();    // ³õÊ¼»¯Ê§°Ü
     }
     
-    HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_2);
-    HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_4);
+    HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
+    timPwmPerCtrl(&htim3, TIM_PWM_CHANNEL_1, 80);
   /* USER CODE END 2 */
     AHT20_Init();
 
@@ -126,36 +127,36 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-      /* ---------- 1. è¯»å–å…¨éƒ¨ä¼ æ„Ÿå™¨ ---------- */
+      /* ---------- 1. ¶ÁÈ¡È«²¿´«¸ĞÆ÷ ---------- */
       float airTemp = 0.0f;
       float airHumi = 0.0f;
       float ntc0_temp = NTC_GetTemp(adc1.channelVal[0]);
       float ntc1_temp = NTC_GetTemp(adc1.channelVal[1]);
       uint8_t aht20_ok = (AHT20_Read(&airTemp, &airHumi) == 0);
 
-      /* é€è·¯æ£€æŸ¥ä¼ æ„Ÿå™¨æœ‰æ•ˆæ€§ */
+      /* ÖğÂ·¼ì²é´«¸ĞÆ÷ÓĞĞ§ĞÔ */
       uint8_t ntc0_valid = (adc1.channelVal[0] >= ADC_NTC_MIN)
                         && (adc1.channelVal[0] <= ADC_NTC_MAX);
       uint8_t ntc1_valid = (adc1.channelVal[1] >= ADC_NTC_MIN)
                         && (adc1.channelVal[1] <= ADC_NTC_MAX);
       
-      /* ---------- 2. è®¡ç®—åˆ¶å†·è¡¨é¢æ¸©åº¦ï¼ˆä»…æœ‰æ•ˆNTCå‚ä¸ï¼ŒAHT20ä¸å‚ä¸æ¸©æ§åé¦ˆï¼‰ ---------- */
+      /* ---------- 2. ¼ÆËãÖÆÀä±íÃæÎÂ¶È£¨½öÓĞĞ§NTC²ÎÓë£¬AHT20²»²ÎÓëÎÂ¿Ø·´À¡£© ---------- */
       float surfaceTemp = 0.0f;
       uint8_t ntc_valid_cnt = 0;
       if (ntc0_valid) { surfaceTemp += ntc0_temp; ntc_valid_cnt++; }
       if (ntc1_valid) { surfaceTemp += ntc1_temp; ntc_valid_cnt++; }
       if (aht20_ok)   { surfaceTemp += airTemp; ntc_valid_cnt++; }
       
-      /* NTCå…¨éƒ¨æ•…éšœ â†’ å…³åœåˆ¶å†· */
+      /* NTCÈ«²¿¹ÊÕÏ ¡ú ¹ØÍ£ÖÆÀä */
       if (ntc_valid_cnt == 0) {
-          timPwmPerCtrl(&htim3, TIM_PWM_CHANNEL_2, 0);
+          timPwmPerCtrl(&htim3, TIM_CHANNEL_4, 0);
           pi_integral = 0.0f;
           HAL_Delay(LOOP_PERIOD_MS);
           continue;
       }
       surfaceTemp /= (float)ntc_valid_cnt;
       
-      /* ---------- 3. éœ²ç‚¹ä¸é˜²ç»“éœ²ä¿æŠ¤ï¼ˆä½¿ç”¨ã€åˆ¶å†·è¡¨é¢æ¸©åº¦ã€‘åˆ¤æ–­ç»“éœ²é£é™©ï¼‰ ---------- */
+      /* ---------- 3. Â¶µãÓë·À½áÂ¶±£»¤£¨Ê¹ÓÃ¡¾ÖÆÀä±íÃæÎÂ¶È¡¿ÅĞ¶Ï½áÂ¶·çÏÕ£© ---------- */
       
       float dewPoint = CalcDewPoint(surfaceTemp, airHumi);
       float dewDist = surfaceTemp - dewPoint;
@@ -163,7 +164,7 @@ int main(void)
       uint8_t pi_skip = 0;
       
       if (!dew_protect_active) {
-          /* ä¸‹é™æ²¿: è·éœ²ç‚¹ < 1.5Â°C è¿›å…¥ä¿æŠ¤ */
+          /* ÏÂ½µÑØ: ¾àÂ¶µã < 1.5¡ãC ½øÈë±£»¤ */
           if (dewDist < EMERGENCY_MARGIN) {
               dew_protect_active = 1;
               pi_integral = 0.0f;
@@ -171,17 +172,17 @@ int main(void)
               pi_skip = 1;
           }
       } else {
-          /* ä¸Šå‡æ²¿: æ¢å¤åˆ°éœ²ç‚¹ + 2.5Â°C æ‰è§£é™¤ä¿æŠ¤ */
+          /* ÉÏÉıÑØ: »Ö¸´µ½Â¶µã + 2.5¡ãC ²Å½â³ı±£»¤ */
           if (dewDist > (EMERGENCY_MARGIN + DEW_HYSTERESIS)) {
               dew_protect_active = 0;
-              /* è§£é™¤ä¿æŠ¤, ç»§ç»­æ‰§è¡Œ PI */
+              /* ½â³ı±£»¤, ¼ÌĞøÖ´ĞĞ PI */
           } else {
               output = 0.0f;
-              pi_skip = 1;  /* ä¿æŒå…³åœ, è·³è¿‡ PI é˜²æ­¢ç§¯åˆ†ç´¯ç§¯ */
+              pi_skip = 1;  /* ±£³Ö¹ØÍ£, Ìø¹ı PI ·ÀÖ¹»ı·ÖÀÛ»ı */
           }
       }
       
-      /* ---------- 4. PIæ§åˆ¶å™¨ (ä»…åœ¨éä¿æŠ¤çŠ¶æ€ä¸‹æ‰§è¡Œ) ---------- */
+      /* ---------- 4. PI¿ØÖÆÆ÷ (½öÔÚ·Ç±£»¤×´Ì¬ÏÂÖ´ĞĞ) ---------- */
       if (!pi_skip) {
           float error = surfaceTemp - TARGET_TEMP;
           float p_term = KP * error;
@@ -197,7 +198,7 @@ int main(void)
           if (output < PWM_MIN) output = PWM_MIN;
       }
       
-      timPwmPerCtrl(&htim3, TIM_PWM_CHANNEL_2, (unsigned char)output);
+      timPwmPerCtrl(&htim3, TIM_PWM_CHANNEL_1, (unsigned char)output);
       
       HAL_Delay(LOOP_PERIOD_MS);
       

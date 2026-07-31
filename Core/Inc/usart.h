@@ -31,21 +31,13 @@ extern "C" {
 
 /* USER CODE END Includes */
 
-#define USART1_RX_BUF_SIZE      256
-
-extern uint8_t usart1_rx_buf[USART1_RX_BUF_SIZE];
-extern volatile uint16_t usart1_rx_len;
-extern volatile uint8_t usart1_rx_done;
-
-extern UART_HandleTypeDef huart1;
-extern DMA_HandleTypeDef hdma_usart1_rx;
-extern float rx_temp;
+extern UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
 
-void MX_USART1_UART_Init(void);
+void MX_USART2_UART_Init(void);
 
 /* USER CODE BEGIN Prototypes */
 

@@ -24,7 +24,14 @@
 extern "C" {
 #endif
 
-#define ADC_CHANNEL_NUM     2
+/* Includes ------------------------------------------------------------------*/
+#include "main.h"
+#define ADC_CHANNEL_NUM     4
+#define ADC_BUFFER_SIZE     10  // Ã¿¸öÍ¨µÀ²É¼¯10´ÎÈ¡Æ½¾ù
+
+/* USER CODE BEGIN Includes */
+
+/* USER CODE END Includes */
 
 typedef enum {
     ADC_STA_IDLE = 0,
@@ -32,19 +39,15 @@ typedef enum {
     ADC_STA_COMPLETE
 } eAdcSta;
 
-/* ADC ç»“æž„ä½“ */
+/* ADC ½á¹¹Ìå */
 typedef struct {
     eAdcSta sta;
     unsigned char channelCnt;
     unsigned short channelVal[ADC_CHANNEL_NUM];
+    unsigned short dmaBuffer[ADC_CHANNEL_NUM * ADC_BUFFER_SIZE];  // DMA»º³åÇø
+    unsigned short filteredVal[ADC_CHANNEL_NUM];  // ÂË²¨ºóµÄÖµ
+    volatile uint8_t bufferReady;
 } sAdc;
-
-/* Includes ------------------------------------------------------------------*/
-#include "main.h"
-
-/* USER CODE BEGIN Includes */
-
-/* USER CODE END Includes */
 
 extern ADC_HandleTypeDef hadc;
 extern sAdc adc1;
@@ -55,6 +58,7 @@ extern sAdc adc1;
 
 void MX_ADC_Init(void);
 int adcInit(ADC_HandleTypeDef *hadc, ADC_TypeDef *adcx, sAdc *adc);
+void ProcessHalfBuffer(sAdc *adc, uint16_t start, uint16_t end);
 
 /* USER CODE BEGIN Prototypes */
 

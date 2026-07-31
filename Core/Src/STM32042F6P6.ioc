@@ -125,7 +125,7 @@ float CalcDewPoint(float ambientTemp, float ambientHumi)
     if (ambientHumi < 1.0f) ambientHumi = 1.0f;
     if (ambientHumi > 100.0f) ambientHumi = 100.0f;
 
-    gamma = (a * ambientTemp) / (b + ambientTemp) + log(ambientHumi / 100.0f);
+    gamma = (a * ambientTemp) / (b + ambientTemp) + ln_approx(ambientHumi / 100.0f);
     return (b * gamma) / (a - gamma);
 }
 

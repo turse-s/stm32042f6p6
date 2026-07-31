@@ -2,6 +2,7 @@
 #define _SENSOR_H
 
 #include "main.h"
+#include "math.h"
 
 
 #define AHT20_ADDR         0x70

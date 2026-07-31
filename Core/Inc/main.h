@@ -30,22 +30,22 @@ extern "C" {
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f0xx_hal.h"
 
-/* ---------- PIæ¸©æŽ§å‚æ•° ---------- */
-#define TARGET_TEMP         5.0f    /* ç›®æ ‡æ¸©åº¦ (Â°C), å›ºå®šå€¼          */
-#define EMERGENCY_MARGIN    1.5f    /* è·éœ²ç‚¹<æ­¤å€¼ç´§æ€¥å…³åœ (Â°C)       */
-#define DEW_HYSTERESIS      1.0f    /* é˜²ç»“éœ²ä¿æŠ¤å›žå·® (Â°C)            */
-#define KP                  25.0f   /* æ¯”ä¾‹ç³»æ•° (æ¯Â°Cåå·®è¾“å‡º25%PWM)  */
-#define KI                  1.0f    /* ç§¯åˆ†ç³»æ•° (æ¯Â°CÂ·ç§’ç´¯åŠ 1%PWM)    */
-#define LOOP_PERIOD_MS      50    /* æŽ§åˆ¶å‘¨æœŸ (ms)                  */
+/* ---------- PIÎÂ¿Ø²ÎÊý ---------- */
+#define TARGET_TEMP         5.0f    /* Ä¿±êÎÂ¶È (¡ãC), ¹Ì¶¨Öµ          */
+#define EMERGENCY_MARGIN    1.5f    /* ¾àÂ¶µã<´ËÖµ½ô¼±¹ØÍ£ (¡ãC)       */
+#define DEW_HYSTERESIS      1.0f    /* ·À½áÂ¶±£»¤»Ø²î (¡ãC)            */
+#define KP                  25.0f   /* ±ÈÀýÏµÊý (Ã¿¡ãCÆ«²îÊä³ö25%PWM)  */
+#define KI                  1.0f    /* »ý·ÖÏµÊý (Ã¿¡ãC¡¤ÃëÀÛ¼Ó1%PWM)    */
+#define LOOP_PERIOD_MS      50    /* ¿ØÖÆÖÜÆÚ (ms)                  */
 #define PWM_MAX             100.0f
 #define PWM_MIN             0.0f
 
-/* NTC æ–­çº¿/çŸ­è·¯æ£€æµ‹: 100kÎ© NTC + 100kÎ© ä¸Šæ‹‰åˆ° 3.3V */
-#define ADC_NTC_MIN         300     /* ADC<300 â†’ NTCçŸ­è·¯æˆ–æ¸©åº¦>85Â°C    */
-#define ADC_NTC_MAX         3900    /* ADC>3900 â†’ NTCæ–­çº¿æˆ–æ¸©åº¦<-30Â°C  */
+/* NTC ¶ÏÏß/¶ÌÂ·¼ì²â: 100k¦¸ NTC + 100k¦¸ ÉÏÀ­µ½ 3.3V */
+#define ADC_NTC_MIN         300     /* ADC<300 ¡ú NTC¶ÌÂ·»òÎÂ¶È>85¡ãC    */
+#define ADC_NTC_MAX         3900    /* ADC>3900 ¡ú NTC¶ÏÏß»òÎÂ¶È<-30¡ãC  */
 
-static float pi_integral = 0.0f;    /* ç§¯åˆ†ç´¯åŠ é¡¹, å¸¦æŠ—é¥±å’Œä¿æŠ¤       */
-static uint8_t dew_protect_active = 0; /* é˜²ç»“éœ²ä¿æŠ¤çŠ¶æ€ (å¸¦å›žå·®)     */
+static float pi_integral = 0.0f;    /* »ý·ÖÀÛ¼ÓÏî, ´ø¿¹±¥ºÍ±£»¤       */
+static uint8_t dew_protect_active = 0; /* ·À½áÂ¶±£»¤×´Ì¬ (´ø»Ø²î)     */
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
