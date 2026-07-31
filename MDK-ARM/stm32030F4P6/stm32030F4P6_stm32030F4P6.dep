@@ -1,7 +1,7 @@
 Dependencies for Project 'stm32030F4P6', Target 'stm32030F4P6': (DO NOT MODIFY !)
 CompilerVersion: 5060960::V5.06 update 7 (build 960)::.\ARMCC
 F (startup_stm32f030x6.s)(0x6A66BD72)(--cpu Cortex-M0 -g --apcs=interwork -I.\RTE\_stm32030F4P6-ID:\APP\Keil\ARM\PACK\ARM\CMSIS\6.1.0\CMSIS\Core\Include--pd "__UVISION_VERSION SETA 540" --pd "STM32F030x6 SETA 1" --pd "_RTE_ SETA 1"--list startup_stm32f030x6.lst --xref -o stm32030f4p6\startup_stm32f030x6.o --depend stm32030f4p6\startup_stm32f030x6.d)
-F (../Core/Src/main.c)(0x6A6B0DFD)(--c99 -c --cpu Cortex-M0 -g -W -O0 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32F0xx_HAL_Driver/Inc -I ../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I ../Drivers/CMSIS/Include-I.\RTE\_stm32030F4P6-ID:\APP\Keil\ARM\PACK\ARM\CMSIS\6.1.0\CMSIS\Core\Include-D__UVISION_VERSION="540" -DSTM32F030x6 -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F030x6-o stm32030f4p6\main.o --omf_browse stm32030f4p6\main.crf --depend stm32030f4p6\main.d)
+F (../Core/Src/main.c)(0x6A6C5A32)(--c99 -c --cpu Cortex-M0 -g -W -O0 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32F0xx_HAL_Driver/Inc -I ../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I ../Drivers/CMSIS/Include-I.\RTE\_stm32030F4P6-ID:\APP\Keil\ARM\PACK\ARM\CMSIS\6.1.0\CMSIS\Core\Include-D__UVISION_VERSION="540" -DSTM32F030x6 -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F030x6-o stm32030f4p6\main.o --omf_browse stm32030f4p6\main.crf --depend stm32030f4p6\main.d)
 I (../Core/Inc/main.h)(0x6A681A98)
 I (../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal.h)(0x6A66BD65)
 I (../Core/Inc/stm32f0xx_hal_conf.h)(0x6A683D5C)
