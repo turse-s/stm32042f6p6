@@ -38,4 +38,5 @@ stm32030f4p6\main.o: ../Core/Inc/i2c.h
 stm32030f4p6\main.o: ../Core/Inc/tim.h
 stm32030f4p6\main.o: ../Core/Inc/gpio.h
 stm32030f4p6\main.o: ../Core/Inc/sensor.h
+stm32030f4p6\main.o: ../Core/Src/usart.h
 stm32030f4p6\main.o: D:\APP\Keil\ARM\ARMCC\Bin\..\include\math.h

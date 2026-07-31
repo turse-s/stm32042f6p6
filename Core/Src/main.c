@@ -25,6 +25,7 @@
 #include "tim.h"
 #include "gpio.h"
 #include "sensor.h"
+#include "usart.h"
 #include <math.h>
 
 ADC_HandleTypeDef hadc1;
@@ -104,100 +105,108 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
 //  MX_ADC_Init();
-  MX_I2C1_Init();
+//  MX_I2C1_Init();
 //  MX_DMA_Init();
   MX_TIM3_Init();
+  
+//  MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
 
-    adc1.sta = ADC_STA_IDLE;
-    adc1.channelCnt = ADC_CHANNEL_NUM;  // 2路
-    
-    if (adcInit(&hadc1, ADC1, &adc1) != 0) {
-        Error_Handler();    // 初始化失败
-    }
+//    adc1.sta = ADC_STA_IDLE;
+//    adc1.channelCnt = ADC_CHANNEL_NUM;  // 2路
+//    
+//    if (adcInit(&hadc1, ADC1, &adc1) != 0) {
+//        Error_Handler();    // 初始化失败
+//    }
     
     HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_2);
-    HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_4);
+    HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
+//    timPwmPerCtrl(&htim3, TIM_PWM_CHANNEL_2, 50);
+    
+      timPwmPerCtrl(&htim3, TIM_PWM_CHANNEL_2, 50);
+      timPwmPerCtrl(&htim3, TIM_PWM_CHANNEL_1, 80);
   /* USER CODE END 2 */
-    AHT20_Init();
+//    AHT20_Init();
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+//      timPwmPerCtrl(&htim3, TIM_PWM_CHANNEL_2, 70);
+//      timPwmPerCtrl(&htim3, TIM_PWM_CHANNEL_1, 50);
     /* USER CODE END WHILE */
       /* ---------- 1. 读取全部传感器 ---------- */
-      float airTemp = 0.0f;
-      float airHumi = 0.0f;
-      float ntc0_temp = NTC_GetTemp(adc1.channelVal[0]);
-      float ntc1_temp = NTC_GetTemp(adc1.channelVal[1]);
-      uint8_t aht20_ok = (AHT20_Read(&airTemp, &airHumi) == 0);
+//      float airTemp = 0.0f;
+//      float airHumi = 0.0f;
+//      float ntc0_temp = NTC_GetTemp(adc1.channelVal[0]);
+//      float ntc1_temp = NTC_GetTemp(adc1.channelVal[1]);
+//      uint8_t aht20_ok = (AHT20_Read(&airTemp, &airHumi) == 0);
 
-      /* 逐路检查传感器有效性 */
-      uint8_t ntc0_valid = (adc1.channelVal[0] >= ADC_NTC_MIN)
-                        && (adc1.channelVal[0] <= ADC_NTC_MAX);
-      uint8_t ntc1_valid = (adc1.channelVal[1] >= ADC_NTC_MIN)
-                        && (adc1.channelVal[1] <= ADC_NTC_MAX);
-      
-      /* ---------- 2. 计算制冷表面温度（仅有效NTC参与，AHT20不参与温控反馈） ---------- */
-      float surfaceTemp = 0.0f;
-      uint8_t ntc_valid_cnt = 0;
-      if (ntc0_valid) { surfaceTemp += ntc0_temp; ntc_valid_cnt++; }
-      if (ntc1_valid) { surfaceTemp += ntc1_temp; ntc_valid_cnt++; }
-      if (aht20_ok)   { surfaceTemp += airTemp; ntc_valid_cnt++; }
-      
-      /* NTC全部故障 → 关停制冷 */
-      if (ntc_valid_cnt == 0) {
-          timPwmPerCtrl(&htim3, TIM_PWM_CHANNEL_2, 0);
-          pi_integral = 0.0f;
-          HAL_Delay(LOOP_PERIOD_MS);
-          continue;
-      }
-      surfaceTemp /= (float)ntc_valid_cnt;
-      
-      /* ---------- 3. 露点与防结露保护（使用【制冷表面温度】判断结露风险） ---------- */
-      
-      float dewPoint = CalcDewPoint(surfaceTemp, airHumi);
-      float dewDist = surfaceTemp - dewPoint;
-      float output;
-      uint8_t pi_skip = 0;
-      
-      if (!dew_protect_active) {
-          /* 下降沿: 距露点 < 1.5°C 进入保护 */
-          if (dewDist < EMERGENCY_MARGIN) {
-              dew_protect_active = 1;
-              pi_integral = 0.0f;
-              output = 0.0f;
-              pi_skip = 1;
-          }
-      } else {
-          /* 上升沿: 恢复到露点 + 2.5°C 才解除保护 */
-          if (dewDist > (EMERGENCY_MARGIN + DEW_HYSTERESIS)) {
-              dew_protect_active = 0;
-              /* 解除保护, 继续执行 PI */
-          } else {
-              output = 0.0f;
-              pi_skip = 1;  /* 保持关停, 跳过 PI 防止积分累积 */
-          }
-      }
-      
-      /* ---------- 4. PI控制器 (仅在非保护状态下执行) ---------- */
-      if (!pi_skip) {
-          float error = surfaceTemp - TARGET_TEMP;
-          float p_term = KP * error;
+//      /* 逐路检查传感器有效性 */
+//      uint8_t ntc0_valid = (adc1.channelVal[0] >= ADC_NTC_MIN)
+//                        && (adc1.channelVal[0] <= ADC_NTC_MAX);
+//      uint8_t ntc1_valid = (adc1.channelVal[1] >= ADC_NTC_MIN)
+//                        && (adc1.channelVal[1] <= ADC_NTC_MAX);
+//      
+//      /* ---------- 2. 计算制冷表面温度（仅有效NTC参与，AHT20不参与温控反馈） ---------- */
+//      float surfaceTemp = 0.0f;
+//      uint8_t ntc_valid_cnt = 0;
+//      if (ntc0_valid) { surfaceTemp += ntc0_temp; ntc_valid_cnt++; }
+//      if (ntc1_valid) { surfaceTemp += ntc1_temp; ntc_valid_cnt++; }
+//      if (aht20_ok)   { surfaceTemp += airTemp; ntc_valid_cnt++; }
+//      
+//      /* NTC全部故障 → 关停制冷 */
+//      if (ntc_valid_cnt == 0) {
+//          timPwmPerCtrl(&htim3, TIM_CHANNEL_4, 0);
+//          pi_integral = 0.0f;
+//          HAL_Delay(LOOP_PERIOD_MS);
+//          continue;
+//      }
+//      surfaceTemp /= (float)ntc_valid_cnt;
+//      
+//      /* ---------- 3. 露点与防结露保护（使用【制冷表面温度】判断结露风险） ---------- */
+//      
+//      float dewPoint = CalcDewPoint(surfaceTemp, airHumi);
+//      float dewDist = surfaceTemp - dewPoint;
+//      float output;
+//      uint8_t pi_skip = 0;
+//      
+//      if (!dew_protect_active) {
+//          /* 下降沿: 距露点 < 1.5°C 进入保护 */
+//          if (dewDist < EMERGENCY_MARGIN) {
+//              dew_protect_active = 1;
+//              pi_integral = 0.0f;
+//              output = 0.0f;
+//              pi_skip = 1;
+//          }
+//      } else {
+//          /* 上升沿: 恢复到露点 + 2.5°C 才解除保护 */
+//          if (dewDist > (EMERGENCY_MARGIN + DEW_HYSTERESIS)) {
+//              dew_protect_active = 0;
+//              /* 解除保护, 继续执行 PI */
+//          } else {
+//              output = 0.0f;
+//              pi_skip = 1;  /* 保持关停, 跳过 PI 防止积分累积 */
+//          }
+//      }
+//      
+//      /* ---------- 4. PI控制器 (仅在非保护状态下执行) ---------- */
+//      if (!pi_skip) {
+//          float error = surfaceTemp - TARGET_TEMP;
+//          float p_term = KP * error;
 
-          pi_integral += KI * error * (LOOP_PERIOD_MS / 1000.0f);
+//          pi_integral += KI * error * (LOOP_PERIOD_MS / 1000.0f);
 
-          if (pi_integral > PWM_MAX) pi_integral = PWM_MAX;
-          if (pi_integral < 0.0f)    pi_integral = 0.0f;
+//          if (pi_integral > PWM_MAX) pi_integral = PWM_MAX;
+//          if (pi_integral < 0.0f)    pi_integral = 0.0f;
 
-          output = p_term + pi_integral;
+//          output = p_term + pi_integral;
 
-          if (output > PWM_MAX) output = PWM_MAX;
-          if (output < PWM_MIN) output = PWM_MIN;
-      }
-      
-      timPwmPerCtrl(&htim3, TIM_PWM_CHANNEL_2, (unsigned char)output);
+//          if (output > PWM_MAX) output = PWM_MAX;
+//          if (output < PWM_MIN) output = PWM_MIN;
+//      }
+//      
+//      timPwmPerCtrl(&htim3, TIM_CHANNEL_4, (unsigned char)output);
       
       HAL_Delay(LOOP_PERIOD_MS);
       

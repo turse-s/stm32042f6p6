@@ -44,13 +44,13 @@ int adcInit(ADC_HandleTypeDef *hadc, ADC_TypeDef *adcx, sAdc *adc)
   /** Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion)
   */
   hadc->Instance = adcx;
-  hadc->Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
+  hadc->Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV2;
   hadc->Init.Resolution = ADC_RESOLUTION_12B;
   hadc->Init.DataAlign = ADC_DATAALIGN_RIGHT;
-  hadc->Init.ScanConvMode = ENABLE;
-//  hadc.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
-//  hadc.Init.LowPowerAutoWait = DISABLE;
-//  hadc.Init.LowPowerAutoPowerOff = DISABLE;
+  hadc->Init.ScanConvMode = ADC_SCAN_DIRECTION_FORWARD;
+  hadc->Init.EOCSelection = ADC_EOC_SINGLE_CONV;
+  hadc->Init.LowPowerAutoWait = DISABLE;
+  hadc->Init.LowPowerAutoPowerOff = DISABLE;
   hadc->Init.ContinuousConvMode = ENABLE;
   hadc->Init.DiscontinuousConvMode = DISABLE;
   hadc->Init.ExternalTrigConv = ADC_SOFTWARE_START;
@@ -76,10 +76,17 @@ int adcInit(ADC_HandleTypeDef *hadc, ADC_TypeDef *adcx, sAdc *adc)
     if (HAL_ADC_ConfigChannel(hadc, &sConfig) != HAL_OK) {
         err++;
     }
-    
-     if (HAL_ADC_Start_DMA(hadc, (uint32_t*)adc->channelVal, adc->channelCnt) != HAL_OK) {
+     
+    sConfig.Channel = ADC_CHANNEL_4;
+    sConfig.Rank = 3;                          // 占位
+    if (HAL_ADC_ConfigChannel(hadc, &sConfig) != HAL_OK) {
         err++;
     }
+    
+     if (HAL_ADC_Start_DMA(hadc, (uint32_t*)adc->channelVal, adc->channelCnt * ADC_BUFFER_SIZE) != HAL_OK) {
+        err++;
+    }
+    
   /** Configure for the selected ADC regular channel to be converted.
   */
     
@@ -105,13 +112,14 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* adcHandle)
       
        /* DMA controller clock enable */
         __HAL_RCC_DMA1_CLK_ENABLE();
-        HAL_NVIC_SetPriority(DMA1_Ch1_IRQn, 6, 0);
+        HAL_NVIC_SetPriority(DMA1_Ch1_IRQn, 3, 0);
         HAL_NVIC_EnableIRQ(DMA1_Ch1_IRQn);
     /**ADC GPIO Configuration
     PA0     ------> ADC_IN0
     PA1     ------> ADC_IN1
+    PA4     ------> ADC_IN4
     */
-    GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1;
+    GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_4;
     GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
@@ -132,7 +140,7 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* adcHandle)
     }
 
     __HAL_LINKDMA(adcHandle,DMA_Handle,hdma_adc);
-    
+//    
 //    HAL_NVIC_SetPriority(ADC1_COMP_IRQn, 7, 0);
 //    HAL_NVIC_EnableIRQ(ADC1_COMP_IRQn);
 
@@ -157,7 +165,7 @@ void HAL_ADC_MspDeInit(ADC_HandleTypeDef* adcHandle)
     PA0     ------> ADC_IN0
     PA1     ------> ADC_IN1
     */
-    HAL_GPIO_DeInit(GPIOA, GPIO_PIN_0|GPIO_PIN_1);
+    HAL_GPIO_DeInit(GPIOA, GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_4);
 
     /* ADC1 DMA DeInit */
     HAL_DMA_DeInit(adcHandle->DMA_Handle);
@@ -169,6 +177,38 @@ void HAL_ADC_MspDeInit(ADC_HandleTypeDef* adcHandle)
   }
 }
 
+
+
+// DMA半传输完成和完全传输完成回调
+void HAL_DMA_ConvHalfCpltCallback(DMA_HandleTypeDef *hdma)
+{
+    if (hdma->Instance == DMA1_Channel1) {
+        // 前半段缓冲区已满，可以处理前半段数据
+        ProcessHalfBuffer(&adc1, 0, ADC_BUFFER_SIZE/2);
+    }
+}
+
+void HAL_DMA_ConvCpltCallback(DMA_HandleTypeDef *hdma)
+{
+    if (hdma->Instance == DMA1_Channel1) {
+        // 后半段缓冲区已满，处理后半段数据
+        ProcessHalfBuffer(&adc1, ADC_BUFFER_SIZE/2, ADC_BUFFER_SIZE);
+        adc1.bufferReady = 1;  // 通知主循环有新数据
+    }
+}
+
+// 处理缓冲区数据
+void ProcessHalfBuffer(sAdc *adc, uint16_t start, uint16_t end)
+{
+    // 对每个通道的数据进行滤波处理
+    for (int ch = 0; ch < adc->channelCnt; ch++) {
+        uint32_t sum = 0;
+        for (int i = start; i < end; i++) {
+            sum += adc->dmaBuffer[i * adc->channelCnt + ch];
+        }
+        adc->filteredVal[ch] = sum / (end - start);  // 平均值滤波
+    }
+}
 /* USER CODE BEGIN 1 */
 
 /* USER CODE END 1 */
