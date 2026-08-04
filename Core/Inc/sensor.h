@@ -10,7 +10,17 @@
 #define AHT20_CMD_MEASURE  0xAC
 #define AHT20_CMD_RESET    0xBA
 
-extern uint8_t aht20_raw_data[6];
+typedef struct {
+    float airTemp;      // 空气温度（来自 AHT20）
+    float airHumi;      // 空气湿度（来自 AHT20）
+    float ntc0_temp;    // NTC0 温度
+    float ntc1_temp;    // NTC1 温度
+    float voltage1;
+    float voltage2;
+    uint8_t aht20_ok;   // AHT20 读取成功标志（1:成功, 0:失败）
+} SensorData_t;
+
+extern SensorData_t sensor;
 
 uint8_t AHT20_Read(float *temp, float *humi);
 float CalcDewPoint(float ambientTemp, float ambientHumi);

@@ -2,6 +2,8 @@
 #include "i2c.h"
 #include <stdint.h>
 
+SensorData_t sensor;
+
 /**
   * @brief  轻量级自然对数 ln(x), 用 IEEE 754 位操作 + 32项LUT
   *         替代标准库 log/logf, 避免链接完整数学库
@@ -76,13 +78,13 @@ uint8_t AHT20_Read(float *temp, float *humi)
 
     HAL_Delay(80);
 
-    if (HAL_I2C_Master_Receive(&hi2c1, AHT20_ADDR, aht20_raw_data, 7, 100) != HAL_OK) {
+    if (HAL_I2C_Master_Receive(&hi2c1, AHT20_ADDR, raw_data, 7, 100) != HAL_OK) {
         HAL_I2C_DeInit(&hi2c1);
         HAL_I2C_Init(&hi2c1);
         return 2; 
     }
 
-    status = aht20_raw_data[0];
+    status = raw_data[0];
     if (status & 0x80) {
         return 3; // 传感器忙
     }
@@ -96,13 +98,13 @@ uint8_t AHT20_Read(float *temp, float *humi)
         return 5;  // CRC 错误
     }
     
-    hum_raw = ((uint32_t)aht20_raw_data[1] << 12) | 
-              ((uint32_t)aht20_raw_data[2] << 4) | 
-              (aht20_raw_data[3] >> 4);
+    hum_raw = ((uint32_t)raw_data[1] << 12) | 
+              ((uint32_t)raw_data[2] << 4) | 
+              (raw_data[3] >> 4);
     
-    temp_raw = ((uint32_t)(aht20_raw_data[3] & 0x0F) << 16) | 
-               ((uint32_t)aht20_raw_data[4] << 8) | 
-               aht20_raw_data[5];
+    temp_raw = ((uint32_t)(raw_data[3] & 0x0F) << 16) | 
+               ((uint32_t)raw_data[4] << 8) | 
+               raw_data[5];
 
     *humi = (hum_raw / (float)(1 << 20)) * 100.0f;
     *temp = (temp_raw / (float)(1 << 20)) * 200.0f - 50.0f;

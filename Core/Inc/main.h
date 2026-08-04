@@ -30,6 +30,8 @@ extern "C" {
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f0xx_hal.h"
 
+#define TARGET_VOLTAGE         1.0f
+
 /* ---------- PI温控参数 ---------- */
 #define TARGET_TEMP         5.0f    /* 目标温度 (°C), 固定值          */
 #define EMERGENCY_MARGIN    1.5f    /* 距露点<此值紧急关停 (°C)       */

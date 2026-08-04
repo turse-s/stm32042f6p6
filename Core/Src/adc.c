@@ -64,32 +64,36 @@ int adcInit(ADC_HandleTypeDef *hadc, ADC_TypeDef *adcx, sAdc *adc)
   {
     Error_Handler();
   }
+  
+//    if (HAL_ADCEx_Calibration_Start(hadc) != HAL_OK) {
+//        Error_Handler();
+//    }
   /** Configure for the selected ADC regular channel to be converted.
   */
   sConfig.Channel = ADC_CHANNEL_0;
   sConfig.Rank = 1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_1CYCLE_5;
+  sConfig.SamplingTime = ADC_SAMPLETIME_239CYCLES_5;
   if (HAL_ADC_ConfigChannel(hadc, &sConfig) != HAL_OK) {
-		err++;
+    err++;
   }
   /** Configure for the selected ADC regular channel to be converted.
   */
   sConfig.Channel = ADC_CHANNEL_1;
   sConfig.Rank = 2;
   if (HAL_ADC_ConfigChannel(hadc, &sConfig) != HAL_OK) {
-		err++;
+    err++;
   }
   /** Configure for the selected ADC regular channel to be converted.
   */
   sConfig.Channel = ADC_CHANNEL_4;
   sConfig.Rank = 3;
   if (HAL_ADC_ConfigChannel(hadc, &sConfig) != HAL_OK) {
-		err++;
+    err++;
   }
   /** Configure for the selected ADC regular channel to be converted.
   */
   sConfig.Channel = ADC_CHANNEL_5;
-  sConfig.Rank = 3;
+  sConfig.Rank = 4;
   if (HAL_ADC_ConfigChannel(hadc, &sConfig) != HAL_OK)
   {
     Error_Handler();

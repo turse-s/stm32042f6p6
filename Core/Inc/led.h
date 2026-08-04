@@ -1,8 +1,8 @@
 /**
   ******************************************************************************
-  * @file    gpio.h
-  * @brief   This file contains all the function prototypes for
-  *          the gpio.c file
+  * @file    led.h
+  * @brief   This file provides LED control functions including initialization, 
+  *          on/off control and toggle operations.
   ******************************************************************************
   * @attention
   *
@@ -17,8 +17,8 @@
   ******************************************************************************
   */
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __GPIO_H__
-#define __GPIO_H__
+#ifndef __LED_H__
+#define __LED_H__
 
 #ifdef __cplusplus
 extern "C" {
@@ -26,63 +26,36 @@ extern "C" {
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "gpio.h"
 
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
 
+
 typedef enum
 {
-    GPIO_A = (unsigned int)GPIOA,
-    GPIO_B = (unsigned int)GPIOB,
-    GPIO_C = (unsigned int)GPIOC,
-    GPIO_F = (unsigned int)GPIOF,
-} eGpioPort;
+    LED_STA_OFF = 0,
+    LED_STA_ON,
+    LED_STA_FLASH,
+} eLedSta;
 
-// gpio pin
-typedef enum
-{
-    GPIO_0 = GPIO_PIN_0,
-    GPIO_1 = GPIO_PIN_1,
-    GPIO_2 = GPIO_PIN_2,
-    GPIO_3 = GPIO_PIN_3,
-    GPIO_4 = GPIO_PIN_4,
-    GPIO_5 = GPIO_PIN_5,
-    GPIO_6 = GPIO_PIN_6,
-    GPIO_7 = GPIO_PIN_7,
-    GPIO_8 = GPIO_PIN_8,
-    GPIO_9 = GPIO_PIN_9,
-    GPIO_10 = GPIO_PIN_10,
-    GPIO_11 = GPIO_PIN_11,
-    GPIO_12 = GPIO_PIN_12,
-    GPIO_13 = GPIO_PIN_13,
-    GPIO_14 = GPIO_PIN_14,
-    GPIO_15 = GPIO_PIN_15,
-} eGpioPin;
-
-// gpio status
-typedef enum
-{
-    GPIO_LOW = GPIO_PIN_RESET,
-    GPIO_HIGH = GPIO_PIN_SET,
-} eGpioSta;
-
-
+// led type
 typedef struct
 {
-    eGpioPort port;
-    eGpioPin pin;
-    eGpioSta sta;
-} sGpio;
-
+    unsigned short num;
+    unsigned int timeCnt;
+    unsigned int cycleTime;
+    unsigned int offTime;
+    unsigned char enLev;
+    eLedSta sta;
+    sGpio gpio;
+} sLed;
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
 
-//void MX_GPIO_Init(void);
-
-int gpioRead(sGpio *gpio);
-int gpioWrite(sGpio *gpio);
+void LED_GPIO_Init(void);
 
 /* USER CODE BEGIN Prototypes */
 
