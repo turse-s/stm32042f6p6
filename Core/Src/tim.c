@@ -75,7 +75,7 @@ void MX_TIM3_Init(void)
 
 }
 
-void timPwmPerCtrl(TIM_HandleTypeDef *htim, eTimPwmChan channel, unsigned char per)
+void timPwmPerCtrl(TIM_HandleTypeDef *htim, eTimPwmChan channel, unsigned int per)
 {
     unsigned long compareReg;
 
@@ -84,12 +84,12 @@ void timPwmPerCtrl(TIM_HandleTypeDef *htim, eTimPwmChan channel, unsigned char p
      * 截断为 0 → 0% 占空比。此处钳位到 Period=65535, 得到 99.998% 占空比,
      * 对 MOSFET 驱动 TEC 来说等价于 100%。
      */
-    if (per >= 100) {
+    if (per >= 10000) {
         compareReg = htim->Init.Period;
     } else if (per == 0) {
         compareReg = 0;
     } else {
-        compareReg = (unsigned long)((htim->Init.Period + 1) * (per / 100.0f));
+        compareReg = (unsigned long)(((htim->Init.Period + 1) * per + 5000) / 10000.f);
     }
 
     if ((channel & TIM_PWM_CHANNEL_1) == TIM_PWM_CHANNEL_1) {

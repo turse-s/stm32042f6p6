@@ -51,7 +51,7 @@ extern TIM_HandleTypeDef htim3;
 void MX_TIM3_Init(void);
 
 void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
-void timPwmPerCtrl(TIM_HandleTypeDef *htim, eTimPwmChan channel, unsigned char per);
+void timPwmPerCtrl(TIM_HandleTypeDef *htim, eTimPwmChan channel, unsigned int per);
 
 /* USER CODE BEGIN Prototypes */
 

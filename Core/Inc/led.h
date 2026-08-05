@@ -55,7 +55,11 @@ typedef struct
 
 /* USER CODE END Private defines */
 
+extern sLed Led1;
+extern sLed Led2;
+
 void LED_GPIO_Init(void);
+int ledCtrl(sLed *led);
 
 /* USER CODE BEGIN Prototypes */
 

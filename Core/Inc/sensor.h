@@ -11,12 +11,13 @@
 #define AHT20_CMD_RESET    0xBA
 
 typedef struct {
-    float airTemp;      // 空气温度（来自 AHT20）
-    float airHumi;      // 空气湿度（来自 AHT20）
-    float ntc0_temp;    // NTC0 温度
-    float ntc1_temp;    // NTC1 温度
+    float boardTemp;      // 空气温度（来自 AHT20）
+    float boardHumi;      // 空气湿度（来自 AHT20）
+    float tecTemp;    // NTC0 温度
+    float airTemp;    // NTC1 温度
     float voltage1;
     float voltage2;
+    uint16_t pwm_per_myriad; 
     uint8_t aht20_ok;   // AHT20 读取成功标志（1:成功, 0:失败）
 } SensorData_t;
 
