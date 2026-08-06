@@ -158,6 +158,9 @@ uint8_t AHT20_Init(void)
         HAL_Delay(10);
     }
     
+    sensor.temp = 18;
+    sensor.dewBtn = 1;
+    
     return 0;  // ³É¹¦
 }
 /* USER CODE END 0 */

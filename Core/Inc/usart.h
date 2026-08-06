@@ -27,17 +27,36 @@ extern "C" {
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 
+#define UART_RX_BUF_SIZE        512
+#define UART_TX_BUF_SIZE        512
+
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
 
+typedef struct
+{
+    unsigned char num;
+    unsigned char frameReady; 
+    unsigned short txCnt;
+    unsigned char txBuf[UART_TX_BUF_SIZE + 1];
+    unsigned short rxCnt;
+    unsigned char rxBuf[UART_RX_BUF_SIZE + 1];
+
+    unsigned char ringBuf[UART_RX_BUF_SIZE +1];
+} sUart;
+
 extern UART_HandleTypeDef huart2;
+extern sUart uart2;
+extern DMA_HandleTypeDef hdma_usart2_rx;
+extern DMA_HandleTypeDef hdma_usart2_tx;
 
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
 
 void MX_USART2_UART_Init(void);
+void uart_Send(uint16_t cmd, float data);
 
 /* USER CODE BEGIN Prototypes */
 

@@ -18,6 +18,8 @@ typedef struct {
     float dewPointTemp; //结露温度
     float voltage1;
     float voltage2;
+    float temp;
+    int dewBtn;
     unsigned long compareReg;
     uint16_t pwm_per_myriad; 
     uint8_t aht20_ok;   // AHT20 读取成功标志（1:成功, 0:失败）

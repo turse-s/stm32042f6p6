@@ -25,6 +25,7 @@
 #include "led.h"
 #include "sensor.h"
 #include "usart.h"
+#include "parser.h"
 #include <math.h>
 
 ADC_HandleTypeDef hadc1;
@@ -107,6 +108,7 @@ int main(void)
     MX_I2C1_Init();
     MX_TIM3_Init();
     MX_USART2_UART_Init();
+    HAL_UARTEx_ReceiveToIdle_DMA(&huart2, uart2.ringBuf, UART_RX_BUF_SIZE);
   
 //  MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
@@ -131,6 +133,7 @@ int main(void)
     while (1)
     {
         ledCtrl(&Led1);
+
     /* USER CODE END WHILE */
       /* ---------- 1. 读取全部传感器 ---------- */
       
@@ -149,6 +152,10 @@ int main(void)
         sensor.tecTemp = NTC_GetTemp(avg0);
         sensor.airTemp = NTC_GetTemp(avg1);
         uint8_t aht20_ok = (AHT20_Read(&sensor.boardTemp, &sensor.boardHumi) == 0);
+        
+        
+        if (uart2.frameReady ==1) 
+            parse_uart_data(&uart2, &peMsg);
 
 //      /* 逐路检查传感器有效性 */
 //      uint8_t ntc0_valid = (adc1.channelVal[0] >= ADC_NTC_MIN)
@@ -176,29 +183,30 @@ int main(void)
         float dewDist = sensor.tecTemp - sensor.dewPointTemp;
         float output;
         uint8_t pi_skip = 0;
-      
-        if (!dew_protect_active) {
-          /* 下降沿: 距露点 < 1.5°C 进入保护 */
-            if (dewDist < EMERGENCY_MARGIN) {
-                dew_protect_active = 1;
-                pi_integral = 0.0f;
-                output = 0.0f;
-                pi_skip = 1;
-            }
-        } else {
-          /* 上升沿: 恢复到露点 + 2.5°C 才解除保护 */
-            if (dewDist > (EMERGENCY_MARGIN + DEW_HYSTERESIS)) {
-                dew_protect_active = 0;
-              /* 解除保护, 继续执行 PI */
+        if (sensor.dewBtn) {
+            if (!dew_protect_active) {
+              /* 下降沿: 距露点 < 1.5°C 进入保护 */
+                if (dewDist < EMERGENCY_MARGIN) {
+                    dew_protect_active = 1;
+                    pi_integral = 0.0f;
+                    output = 0.0f;
+                    pi_skip = 1;
+                }
             } else {
-                output = 0.0f;
-                pi_skip = 1;  /* 保持关停, 跳过 PI 防止积分累积 */
+              /* 上升沿: 恢复到露点 + 2.5°C 才解除保护 */
+                if (dewDist > (EMERGENCY_MARGIN + DEW_HYSTERESIS)) {
+                    dew_protect_active = 0;
+                  /* 解除保护, 继续执行 PI */
+                } else {
+                    output = 0.0f;
+                    pi_skip = 1;  /* 保持关停, 跳过 PI 防止积分累积 */
+                }
             }
         }
       
       /* ---------- 4. PI控制器 (仅在非保护状态下执行) ---------- */
         if (!pi_skip) {
-            float error = sensor.tecTemp - TARGET_TEMP;
+            float error = sensor.tecTemp - sensor.temp;
             float p_term = KP * error;
 
             pi_integral += KI * error * (LOOP_PERIOD_MS / 1000.0f);
