@@ -19,6 +19,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "tim.h"
+#include "sensor.h"
 
 /* USER CODE BEGIN 0 */
 
@@ -43,7 +44,7 @@ void MX_TIM3_Init(void)
   htim3.Instance = TIM3;
   htim3.Init.Prescaler = 0;
   htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = 335;
+  htim3.Init.Period = 3359;
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_PWM_Init(&htim3) != HAL_OK)
@@ -91,6 +92,8 @@ void timPwmPerCtrl(TIM_HandleTypeDef *htim, eTimPwmChan channel, unsigned int pe
     } else {
         compareReg = (unsigned long)(((htim->Init.Period + 1) * per + 5000) / 10000.f);
     }
+    
+    sensor.compareReg = compareReg;
 
     if ((channel & TIM_PWM_CHANNEL_1) == TIM_PWM_CHANNEL_1) {
         __HAL_TIM_SET_COMPARE(htim, TIM_CHANNEL_1, compareReg);

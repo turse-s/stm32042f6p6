@@ -33,13 +33,13 @@ extern "C" {
 #define TARGET_VOLTAGE         1.50f
 
 /* ---------- PI温控参数 ---------- */
-#define TARGET_TEMP         5.0f    /* 目标温度 (°C), 固定值          */
+#define TARGET_TEMP         15.0f    /* 目标温度 (°C), 固定值          */
 #define EMERGENCY_MARGIN    1.5f    /* 距露点<此值紧急关停 (°C)       */
 #define DEW_HYSTERESIS      1.0f    /* 防结露保护回差 (°C)            */
-#define KP                  50.0f   /* 比例系数 (每°C偏差输出25%PWM)  */
-#define KI                  10.0f    /* 积分系数 (每°C·秒累加1%PWM)    */
+#define KP                  8.0f   /* 比例系数 (每°C偏差输出25%PWM)  */
+#define KI                  0.3f    /* 积分系数 (每°C·秒累加1%PWM)    */
 #define LOOP_PERIOD_MS      50    /* 控制周期 (ms)                  */
-#define PWM_MAX             10000.0f
+#define PWM_MAX             100.0f
 #define PWM_MIN             0.0f
 
 /* NTC 断线/短路检测: 100kΩ NTC + 100kΩ 上拉到 3.3V */

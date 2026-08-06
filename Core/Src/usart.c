@@ -19,12 +19,14 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "usart.h"
+#include "sensor.h"
 
 /* USER CODE BEGIN 0 */
 
 /* USER CODE END 0 */
 
 UART_HandleTypeDef huart2;
+DMA_HandleTypeDef hdma_usart2_rx;
 
 /* USART2 init function */
 
@@ -91,7 +93,7 @@ void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle)
         HAL_NVIC_SetPriority(USART2_IRQn, 5, 0);
         HAL_NVIC_EnableIRQ(USART2_IRQn);
         /* USER CODE BEGIN USART2_MspInit 1 */
-        __HAL_UART_ENABLE_IT(uartHandle,UART_IT_RXNE);
+    __HAL_UART_ENABLE_IT(uartHandle, UART_IT_IDLE);
   /* USER CODE BEGIN USART2_MspInit 1 */
 
   /* USER CODE END USART2_MspInit 1 */

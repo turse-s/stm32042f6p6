@@ -96,17 +96,17 @@ int main(void)
   /* USER CODE END Init */
 
   /* Configure the system clock */
-  SystemClock_Config();
+    SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
 
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
-  LED_GPIO_Init();
-  MX_I2C1_Init();
-  MX_TIM3_Init();
-  MX_USART2_UART_Init();
+    LED_GPIO_Init();
+    MX_I2C1_Init();
+    MX_TIM3_Init();
+    MX_USART2_UART_Init();
   
 //  MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
@@ -124,29 +124,39 @@ int main(void)
     AHT20_Init();
     
     unsigned int per_myriad;
+    uint16_t avg0 = 0, avg1 = 0;
+    uint8_t pi_skip = 0;
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1)
-  {
-//      ledCtrl(&Led1);
-//    /* USER CODE END WHILE */
-//      /* ---------- 1. 读取全部传感器 ---------- */
-   
-      sensor.voltage1 = adc1.channelVal[3] * 3.3f / 4095.0f;
+    while (1)
+    {
+        ledCtrl(&Led1);
+    /* USER CODE END WHILE */
+      /* ---------- 1. 读取全部传感器 ---------- */
+      
+        uint32_t sum0 = 0, sum1 = 0;
+        for (int i = 0; i < ADC_BUFFER_SIZE; i++) {
+            sum0 += adc1.channelVal[0];
+            sum1 += adc1.channelVal[1];
+            HAL_Delay(3);
+        }
+        avg0 = sum0 / ADC_BUFFER_SIZE;
+        avg1 = sum1 / ADC_BUFFER_SIZE;
+
+
+//      sensor.voltage1 = adc1.channelVal[3] * 3.3f / 4095.0f;
 //      sensor.voltage2 = adc1.channelVal[2] * 3.3f / 4095.0f;
-      sensor.tecTemp = NTC_GetTemp(adc1.channelVal[0]);
-      sensor.airTemp = NTC_GetTemp(adc1.channelVal[1]);
-      uint8_t aht20_ok = (AHT20_Read(&sensor.boardTemp, &sensor.boardHumi) == 0);
+        sensor.tecTemp = NTC_GetTemp(avg0);
+        sensor.airTemp = NTC_GetTemp(avg1);
+        uint8_t aht20_ok = (AHT20_Read(&sensor.boardTemp, &sensor.boardHumi) == 0);
 
 //      /* 逐路检查传感器有效性 */
-      uint8_t ntc0_valid = (adc1.channelVal[0] >= ADC_NTC_MIN)
-                        && (adc1.channelVal[0] <= ADC_NTC_MAX);
+//      uint8_t ntc0_valid = (adc1.channelVal[0] >= ADC_NTC_MIN)
+//                        && (adc1.channelVal[0] <= ADC_NTC_MAX);
 //      uint8_t ntc1_valid = (adc1.channelVal[1] >= ADC_NTC_MIN)
 //                        && (adc1.channelVal[1] <= ADC_NTC_MAX);
 //      
-//      /* ---------- 2. 计算制冷表面温度（仅有效NTC参与，AHT20不参与温控反馈） ---------- */
-      float surfaceTemp = 0.0f;
-      uint8_t ntc_valid_cnt = 0;
+      /* ---------- 2. 计算制冷表面温度（仅有效NTC参与，AHT20不参与温控反馈） ---------- */
 //      if (ntc0_valid) { surfaceTemp += ntc0_temp; ntc_valid_cnt++; }
 //      if (ntc1_valid) { surfaceTemp += ntc1_temp; ntc_valid_cnt++; }
 //      if (aht20_ok)   { surfaceTemp += airTemp; ntc_valid_cnt++; }
@@ -162,56 +172,56 @@ int main(void)
 //      
       /* ---------- 3. 露点与防结露保护（使用【制冷表面温度】判断结露风险） ---------- */
       
-      float dewPoint = CalcDewPoint(sensor.boardTemp, sensor.boardHumi);
-      float dewDist = sensor.tecTemp - dewPoint;
-      float output;
-      uint8_t pi_skip = 0;
+        sensor.dewPointTemp = CalcDewPoint(sensor.boardTemp, sensor.boardHumi);
+        float dewDist = sensor.tecTemp - sensor.dewPointTemp;
+        float output;
+        uint8_t pi_skip = 0;
       
-      if (!dew_protect_active) {
+        if (!dew_protect_active) {
           /* 下降沿: 距露点 < 1.5°C 进入保护 */
-          if (dewDist < EMERGENCY_MARGIN) {
-              dew_protect_active = 1;
-              pi_integral = 0.0f;
-              output = 0.0f;
-              pi_skip = 1;
-          }
-      } else {
+            if (dewDist < EMERGENCY_MARGIN) {
+                dew_protect_active = 1;
+                pi_integral = 0.0f;
+                output = 0.0f;
+                pi_skip = 1;
+            }
+        } else {
           /* 上升沿: 恢复到露点 + 2.5°C 才解除保护 */
-          if (dewDist > (EMERGENCY_MARGIN + DEW_HYSTERESIS)) {
-              dew_protect_active = 0;
+            if (dewDist > (EMERGENCY_MARGIN + DEW_HYSTERESIS)) {
+                dew_protect_active = 0;
               /* 解除保护, 继续执行 PI */
-          } else {
-              output = 0.0f;
-              pi_skip = 1;  /* 保持关停, 跳过 PI 防止积分累积 */
-          }
-      }
-//      
-//      /* ---------- 4. PI控制器 (仅在非保护状态下执行) ---------- */
-      if (!pi_skip) {
-          float error = TARGET_VOLTAGE - sensor.voltage1;
-          float p_term = KP * error;
-
-          pi_integral += KI * error * (LOOP_PERIOD_MS / 1000.0f);
-
-          if (pi_integral > PWM_MAX) pi_integral = PWM_MAX;
-          if (pi_integral < 0.0f)    pi_integral = 0.0f;
-
-          output = p_term + pi_integral;
-          sensor.pwm_per_myriad = output;
-
-          if (output > PWM_MAX) output = PWM_MAX;
-          if (output < PWM_MIN) output = PWM_MIN;
-      }
+            } else {
+                output = 0.0f;
+                pi_skip = 1;  /* 保持关停, 跳过 PI 防止积分累积 */
+            }
+        }
       
-      per_myriad = (unsigned int)(output * 100.0f + 0.5f);
-      if (per_myriad > 10000) per_myriad = 10000; 
-//      
-      timPwmPerCtrl(&htim3, TIM_PWM_CHANNEL_1, (unsigned int)per_myriad);
-//      
-      HAL_Delay(LOOP_PERIOD_MS);
+      /* ---------- 4. PI控制器 (仅在非保护状态下执行) ---------- */
+        if (!pi_skip) {
+            float error = sensor.tecTemp - TARGET_TEMP;
+            float p_term = KP * error;
+
+            pi_integral += KI * error * (LOOP_PERIOD_MS / 1000.0f);
+
+            if (pi_integral > PWM_MAX) pi_integral = PWM_MAX;
+            if (pi_integral < 0.0f)    pi_integral = 0.0f;
+
+            output = p_term + pi_integral;
+            sensor.pwm_per_myriad = output;
+
+            if (output > PWM_MAX) output = PWM_MAX;
+            if (output < PWM_MIN) output = PWM_MIN;
+        }
+      
+        per_myriad = (unsigned int)(output * 100.0f + 0.5f);
+        if (per_myriad > 10000) per_myriad = 10000; 
+
+        timPwmPerCtrl(&htim3, TIM_PWM_CHANNEL_1, (unsigned int)per_myriad);
+      
+        HAL_Delay(LOOP_PERIOD_MS);
       
     /* USER CODE BEGIN 3 */
-  }
+    }
   /* USER CODE END 3 */
 }
 
