@@ -62,25 +62,11 @@ int parse_uart_data(sUart *bus, sCommRqMsg *rqMsg)
         case GET_DEW_TEMP:
             uart_Send(rqMsg->cmd,sensor.dewPointTemp);
             break;
+        default:
+            break;
         
     }
     
     uart2.frameReady = 0;
-    
-//    if (len < PELCO_LENGTH) {
-//        return PARSE_ERR_LEN;
-//    }
-//    
-//    if (data[0] != PELCO_HEADER) {
-//        return PARSE_ERR_HEAD;
-//    }
-//    
-//    for (int i = 1; i < PELCO_LENGTH - 1; i++) {   // i ´Ó 1 µ½ 5
-//        checksum += data[i];
-//    }
-//    
-//    if(checksum != data[5]) {
-//        return PARSE_ERR_CHK;
-//    }
 }
  
